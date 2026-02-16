@@ -35,3 +35,7 @@ build/
 ### logs ###~
 logs/
 *.log
+
+### Outros arquivos a ignorar
+src/main/resources/application.properties
+application.properties

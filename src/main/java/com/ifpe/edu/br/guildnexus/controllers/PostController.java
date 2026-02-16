@@ -1,10 +1,13 @@
 package com.ifpe.edu.br.guildnexus.controllers;
 
+import com.ifpe.edu.br.guildnexus.dtos.AddCommentDTO; // Importante
+import com.ifpe.edu.br.guildnexus.dtos.AddLikeDTO;    // Importante
 import com.ifpe.edu.br.guildnexus.dtos.CreatePostDTO;
+import com.ifpe.edu.br.guildnexus.entities.*;         // Importa Post, Comment, PostLike, etc.
 import com.ifpe.edu.br.guildnexus.entities.Character;
-import com.ifpe.edu.br.guildnexus.entities.Gamer;
-import com.ifpe.edu.br.guildnexus.entities.Post;
 import com.ifpe.edu.br.guildnexus.repositories.CharacterRepository;
+import com.ifpe.edu.br.guildnexus.repositories.CommentRepository; // Importante
+import com.ifpe.edu.br.guildnexus.repositories.PostLikeRepository; // Importante
 import com.ifpe.edu.br.guildnexus.repositories.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,21 +28,26 @@ public class PostController {
     @Autowired
     private CharacterRepository characterRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
+    private PostLikeRepository postLikeRepository;
+
+
+    // --- POSTAGENS ---
+
     @PostMapping
     public ResponseEntity create(@RequestBody CreatePostDTO dto) {
-        // 1. Quem é o usuário logado?
         Gamer loggedGamer = (Gamer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // 2. Busca o personagem que "quer" postar
         Character character = characterRepository.findById(dto.characterId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Personagem não encontrado"));
 
-        // 3. SEGURANÇA: O personagem pertence ao usuário logado?
         if (!character.getGamer().getId().equals(loggedGamer.getId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não é dono deste personagem!");
         }
 
-        // 4. Salva o post
         Post newPost = new Post();
         newPost.setContent(dto.content());
         newPost.setAuthor(character);
@@ -49,9 +57,70 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
-    // Listar todos os posts (Feed Global simples por enquanto)
     @GetMapping
     public ResponseEntity<List<Post>> listAll() {
         return ResponseEntity.ok(postRepository.findAll());
+    }
+
+
+    // --- COMENTÁRIOS ---
+
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity addComment(@PathVariable Long postId, @RequestBody AddCommentDTO dto) {
+        // 1. Validação de Segurança
+        Gamer loggedGamer = (Gamer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Character author = characterRepository.findById(dto.characterId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Personagem não encontrado"));
+
+        if (!author.getGamer().getId().equals(loggedGamer.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Personagem não pertence a você");
+        }
+
+        // 2. Achar o post
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post não encontrado"));
+
+        // 3. Salvar
+        Comment comment = new Comment();
+        comment.setContent(dto.content());
+        comment.setPost(post);
+        comment.setAuthor(author);
+        commentRepository.save(comment);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<List<Comment>> listComments(@PathVariable Long postId) {
+        return ResponseEntity.ok(commentRepository.findByPostId(postId));
+    }
+
+
+    // --- LIKES ---
+
+    @PostMapping("/{postId}/like")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity toggleLike(@PathVariable Long postId, @RequestBody AddLikeDTO dto) {
+        // 1. Segurança
+        Gamer loggedGamer = (Gamer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Character author = characterRepository.findById(dto.characterId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (!author.getGamer().getId().equals(loggedGamer.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // 2. Lógica de Toggle
+        if (postLikeRepository.existsByPostIdAndAuthorId(postId, dto.characterId())) {
+            postLikeRepository.deleteByPostIdAndAuthorId(postId, dto.characterId());
+            return ResponseEntity.ok("Like removido");
+        } else {
+            Post post = postRepository.findById(postId).orElseThrow();
+            PostLike like = new PostLike();
+            like.setPost(post);
+            like.setAuthor(author);
+            postLikeRepository.save(like);
+            return ResponseEntity.ok("Like adicionado");
+        }
     }
 }
