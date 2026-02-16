@@ -51,4 +51,32 @@ public class CharacterController {
         var list = characterRepository.findByGamerId(gamer.getId());
         return ResponseEntity.ok(list);
     }
+
+    @PostMapping("/follow")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity followToggle(@RequestBody com.ifpe.edu.br.guildnexus.dtos.FollowDTO dto) {
+        // 1. Segurança básica (Gamer logado é dono do 'myCharacterId'?)
+        Gamer loggedGamer = (Gamer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Character me = characterRepository.findById(dto.myCharacterId())
+                .orElseThrow(() -> new RuntimeException("Seu personagem não encontrado"));
+
+        if (!me.getGamer().getId().equals(loggedGamer.getId())) {
+            return ResponseEntity.status(403).body("Esse personagem não é seu!");
+        }
+
+        // 2. Carrega o alvo
+        Character target = characterRepository.findById(dto.targetCharacterId())
+                .orElseThrow(() -> new RuntimeException("Alvo não encontrado"));
+
+        // 3. Lógica de Toggle (Seguir / Deixar de seguir)
+        if (me.getFollowing().contains(target)) {
+            me.getFollowing().remove(target);
+            characterRepository.save(me);
+            return ResponseEntity.ok("Deixou de seguir " + target.getName());
+        } else {
+            me.getFollowing().add(target);
+            characterRepository.save(me);
+            return ResponseEntity.ok("Agora seguindo " + target.getName());
+        }
+    }
 }

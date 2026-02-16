@@ -1,5 +1,9 @@
 package com.ifpe.edu.br.guildnexus.entities;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -32,4 +36,19 @@ public class Character {
     @ManyToOne
     @JoinColumn(name = "game_id")
     private Game game;
+
+    // Quem EU sigo
+    @JsonIgnore // Evita que ao carregar o personagem, carregue a lista infinita de seguidores
+    @ManyToMany
+    @JoinTable(
+            name = "tb_followers",
+            joinColumns = @JoinColumn(name = "follower_id"), // Eu (Seguidor)
+            inverseJoinColumns = @JoinColumn(name = "followed_id") // Quem eu sigo
+    )
+    private List<Character> following;
+
+    // Quem ME segue
+    @JsonIgnore
+    @ManyToMany(mappedBy = "following")
+    private List<Character> followers;
 }
