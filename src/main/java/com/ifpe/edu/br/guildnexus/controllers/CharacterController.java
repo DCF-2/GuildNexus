@@ -24,7 +24,7 @@ public class CharacterController {
     private GameRepository gameRepository;
 
     @PostMapping
-    public ResponseEntity create(@RequestBody CreateCharacterDTO dto) {
+    public ResponseEntity create(@RequestBody @jakarta.validation.Valid CreateCharacterDTO dto) {
         // 1. Pega o Gamer autenticado (extraído do Token JWT)
         Gamer gamer = (Gamer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 

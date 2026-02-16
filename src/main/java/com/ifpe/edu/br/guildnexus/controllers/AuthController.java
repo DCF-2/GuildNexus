@@ -40,7 +40,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody RegisterDTO data) {
+    public ResponseEntity register(@RequestBody @jakarta.validation.Valid RegisterDTO data) {
         if (this.gamerRepository.findByEmail(data.email()).isPresent()) {
             return ResponseEntity.badRequest().build();
         }
