@@ -123,4 +123,20 @@ public class PostController {
             return ResponseEntity.ok("Like adicionado");
         }
     }
+
+    // Listar Feed Personalizado (Posts de quem eu sigo)
+    @GetMapping("/feed/{myCharacterId}")
+    public ResponseEntity listFeed(@PathVariable Long myCharacterId) {
+        // Segurança: Só posso ver o feed SE o personagem for meu
+        Gamer loggedGamer = (Gamer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Character me = characterRepository.findById(myCharacterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (!me.getGamer().getId().equals(loggedGamer.getId())) {
+             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<Post> feed = postRepository.findFeedByCharacterId(myCharacterId);
+        return ResponseEntity.ok(feed);
+    }
 }
