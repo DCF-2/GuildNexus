@@ -38,7 +38,7 @@ public class PostController {
     // --- POSTAGENS ---
 
     @PostMapping
-    public ResponseEntity create(@RequestBody CreatePostDTO dto) {
+    public ResponseEntity create(@RequestBody @jakarta.validation.Valid CreatePostDTO dto) {
         Gamer loggedGamer = (Gamer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Character character = characterRepository.findById(dto.characterId())
