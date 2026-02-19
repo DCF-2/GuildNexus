@@ -8,7 +8,7 @@ O **Guild Nexus** permite que gamers se cadastrem, criem seus personagens (com u
 
 ## 🎥 Demonstração do Sistema
 
-Confira abaixo o vídeo demonstrando o fluxo completo (Cadastro, Login, Busca, Reserva e Aprovação):
+Confira abaixo o vídeo demonstrando o fluxo completo (Cadastro, Login, Busca, Criação e Live):
 
 [![Assista ao Vídeo](https://i.ytimg.com)]()
 
