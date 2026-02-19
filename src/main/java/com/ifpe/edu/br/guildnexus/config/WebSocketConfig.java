@@ -2,6 +2,7 @@ package com.ifpe.edu.br.guildnexus.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -27,5 +28,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*") // Libera CORS para o Front (React/Angular/HTML)
                 .withSockJS(); // Habilita SockJS para navegadores que não suportam WS puro
+    }
+    
+    public void addViewControllers(ViewControllerRegistry registry) {
+        // Diz: Quando acessar "http://localhost:8080/", encaminhe internamente para "/index.html"
+        registry.addViewController("/").setViewName("forward:/index.html");
     }
 }
