@@ -24,7 +24,7 @@ public class Character {
     private String name;
 
     private Integer level;
-    
+
     private String characterClass; // Ex: Mago, Guerreiro
 
     // Relacionamento: Vários personagens pertencem a UM Gamer
@@ -37,12 +37,14 @@ public class Character {
     @JoinColumn(name = "game_id")
     private Game game;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String photoUrl;
+
     // Quem EU sigo
     @JsonIgnore // Evita que ao carregar o personagem, carregue a lista infinita de seguidores
     @ManyToMany
-    @JoinTable(
-            name = "tb_followers",
-            joinColumns = @JoinColumn(name = "follower_id"), // Eu (Seguidor)
+    @JoinTable(name = "tb_followers", joinColumns = @JoinColumn(name = "follower_id"), // Eu (Seguidor)
             inverseJoinColumns = @JoinColumn(name = "followed_id") // Quem eu sigo
     )
     private List<Character> following;

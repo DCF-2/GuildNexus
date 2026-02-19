@@ -23,19 +23,24 @@ async function carregarPersonagens() {
     container.innerHTML = "";
 
     if (chars.length === 0) {
-        container.innerHTML = `<p class="text-center text-muted">Você ainda não tem personagens.</p>`;
+        container.innerHTML = `<p class="text-center text-muted">Você ainda não tem personagens. Crie o primeiro!</p>`;
         return;
     }
 
     chars.forEach(c => {
+        // Se tiver foto usa ela, senão usa um placeholder
+        const imageHtml = c.photoUrl 
+            ? `<img src="${c.photoUrl}" class="char-img w-100" alt="Foto">`
+            : `<div class="placeholder-img w-100">👾</div>`;
+
         const card = `
             <div class="col-md-4 col-sm-6">
-                <div class="card char-card text-white p-3 h-100" onclick="entrarComo(${c.id})">
-                    <div class="card-body text-center">
-                        <div class="display-4 mb-2">👾</div>
-                        <h4 class="card-title">${c.name}</h4>
-                        <p class="card-text text-success mb-1">Lvl ${c.level} • ${c.characterClass}</p>
-                        <small class="text-muted">${c.game.name}</small>
+                <div class="card char-card shadow-sm h-100" onclick="entrarComo(${c.id})">
+                    ${imageHtml}
+                    <div class="card-body text-center bg-white">
+                        <h4 class="card-title fw-bold text-dark">${c.name}</h4>
+                        <p class="card-text text-primary fw-semibold mb-1">Lvl ${c.level} • ${c.characterClass}</p>
+                        <span class="badge bg-secondary">${c.game.name}</span>
                     </div>
                 </div>
             </div>
@@ -48,7 +53,25 @@ async function criarPersonagem() {
     const name = document.getElementById("charName").value;
     const level = document.getElementById("charLevel").value;
     const characterClass = document.getElementById("charClass").value;
-    const gameId = document.getElementById("charGame").value;
+    const gameName = document.getElementById("charGameName").value; // Agora é nome, não ID
+    const fileInput = document.getElementById("charPhotoFile");
+
+    // Imagem PNG padrão caso ele não faça upload de nada
+    const defaultImage = "https://api.dicebear.com/7.x/bottts/svg?seed=" + name; 
+    let photoUrl = defaultImage;
+
+    // Se o usuário selecionou um arquivo do computador
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        
+        // Converte a imagem para Base64 (texto)
+        photoUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
 
     const response = await fetch(`${API_URL}/characters`, {
         method: "POST",
@@ -56,15 +79,15 @@ async function criarPersonagem() {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ name, level, characterClass, gameId })
+        // Manda os dados, incluindo a imagem convertida
+        body: JSON.stringify({ name, level, characterClass, gameName, photoUrl })
     });
 
     if (response.ok) {
-        // Fecha o modal e recarrega
         bootstrap.Modal.getInstance(document.getElementById('newCharModal')).hide();
         carregarPersonagens();
     } else {
-        alert("Erro ao criar personagem");
+        alert("Erro ao criar personagem. Preencha todos os campos.");
     }
 }
 

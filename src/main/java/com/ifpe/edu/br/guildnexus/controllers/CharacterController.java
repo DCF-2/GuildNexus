@@ -28,15 +28,19 @@ public class CharacterController {
         // 1. Pega o Gamer autenticado (extraído do Token JWT)
         Gamer gamer = (Gamer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // 2. Busca o Jogo pelo ID
-        Game game = gameRepository.findById(dto.gameId())
-                .orElseThrow(() -> new RuntimeException("Jogo não encontrado"));
+       //2. Busca o jogo. Se não existir, cria um novo na hora!
+        Game game = gameRepository.findByNameIgnoreCase(dto.gameName())
+                .orElseGet(() -> {
+                    Game newGame = new Game(null, dto.gameName(), "Gênero Customizado");
+                    return gameRepository.save(newGame);
+                });
 
         // 3. Monta o Personagem
         Character newChar = new Character();
         newChar.setName(dto.name());
         newChar.setLevel(dto.level());
         newChar.setCharacterClass(dto.characterClass());
+        newChar.setPhotoUrl(dto.photoUrl());
         newChar.setGame(game);
         newChar.setGamer(gamer); // Associa ao dono do token
 
