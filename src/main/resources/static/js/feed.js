@@ -109,86 +109,15 @@ async function publicarPost() {
     }
 }
 
-// 4. Lógica de Curtir (Toggle Like)
-async function gostarPost(postId) {
-    const response = await fetch(`${API_URL}/posts/${postId}/like`, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ characterId: myCharId })
-    });
-
-    if (response.ok) {
-        const msg = await response.text();
-        alert(msg); // Exibe "Like adicionado" ou "Like removido"
-    }
+// (Opcional - Simples listagem de users para a lateral)
+async function carregarDescobrir() {
+    // Para simplificar, poderíamos buscar utilizadores aqui, mas por agora 
+    // podes testar publicando com 2 personagens diferentes para os ver no feed global.
+    document.getElementById("discoverList").innerHTML = `<small class="text-muted">A procurar jogadores no servidor...</small>`;
 }
 
-// 5. Exibir/Ocultar caixa de comentários e carregar os comentários do banco
-async function toggleComentarios(postId) {
-    const caixa = document.getElementById(`caixa-comentarios-${postId}`);
-    if (caixa.style.display === "none") {
-        caixa.style.display = "block";
-        carregarComentarios(postId);
-    } else {
-        caixa.style.display = "none";
-    }
-}
-
-// 6. Buscar comentários daquele post no Backend
-async function carregarComentarios(postId) {
-    const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
-        headers: { "Authorization": `Bearer ${token}` }
-    });
-
-    const lista = document.getElementById(`lista-comentarios-${postId}`);
-    lista.innerHTML = "";
-
-    if (response.ok) {
-        const comentarios = await response.json();
-        if (comentarios.length === 0) {
-            lista.innerHTML = `<span class="text-muted">Nenhum comentário ainda.</span>`;
-            return;
-        }
-
-        comentarios.forEach(c => {
-            lista.innerHTML += `
-                <div class="mb-1 border-bottom pb-1">
-                    <strong class="text-dark">${c.author.name}:</strong> 
-                    <span class="text-secondary">${c.content}</span>
-                </div>
-            `;
-        });
-    }
-}
-
-// 7. Enviar um comentário novo
-async function enviarComentario(postId) {
-    const input = document.getElementById(`input-comentario-${postId}`);
-    const content = input.value.trim();
-    if(!content) return;
-
-    const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ characterId: myCharId, content: content })
-    });
-
-    if (response.ok) {
-        input.value = "";
-        carregarComentarios(postId); // Atualiza a listinha na hora
-    }
-}
-
-function verPerfil(targetCharacterId) {
-    // Salva o ID do alvo e vai para a página de perfil dele (Próximo passo!)
-    localStorage.setItem("targetProfileId", targetCharacterId);
-    window.location.href = "profile.html";
+function abrirLive() {
+    alert("Funcionalidade de Live em construção! (Próxima etapa)");
 }
 
 function logout() {
