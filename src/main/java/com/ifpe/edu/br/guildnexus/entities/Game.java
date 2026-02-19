@@ -20,4 +20,5 @@ public class Game {
     private String name;
 
     private String genre; // RPG, MOBA, FPS...
+    
 }
