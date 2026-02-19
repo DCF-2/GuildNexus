@@ -10,9 +10,9 @@ O **Guild Nexus** permite que gamers se cadastrem, criem seus personagens (com u
 
 Confira abaixo o vídeo demonstrando o fluxo completo (Cadastro, Login, Busca, Reserva e Aprovação):
 
-[![Assista ao Vídeo](https://i.ytimg.com)](https://www.youtube.com/watch?v=qPMTrD-WjWQ)
+[![Assista ao Vídeo](https://i.ytimg.com)]()
 
-*Sistema do AirbnTruta*
+*Sistema do Guild Nexus*
 
 ---
 
@@ -67,5 +67,5 @@ Confira abaixo o vídeo demonstrando o fluxo completo (Cadastro, Login, Busca, R
 
 ## 👨‍💻 Autor
 
-Desenvolvido por **Davi Freitas** && **Marcos André**.
+Desenvolvido por **Davi Freitas** && **Marcos André**.  
 _Curso de Análise e Desenvolvimento de Sistemas – IFPE_
