@@ -83,4 +83,17 @@ public class CharacterController {
             return ResponseEntity.ok("Agora seguindo " + target.getName());
         }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Character> getCharacterProfile(@PathVariable Long id) {
+        return characterRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/game/{gameId}")
+    public ResponseEntity<List<Character>> getCharactersByGame(@PathVariable Long gameId) {
+        return ResponseEntity.ok(characterRepository.findByGameId(gameId));
+    }
+
 }
