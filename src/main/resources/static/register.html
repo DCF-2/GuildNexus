@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Guild Nexus - Cadastro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #212529; color: white; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .card { background-color: #343a40; border: none; width: 100%; max-width: 400px; }
+    </style>
+</head>
+<body>
+
+    <div class="card shadow-lg p-4">
+        <div class="text-center mb-4">
+            <h2 class="h3">📝 Nova Ficha</h2>
+        </div>
+
+        <form onsubmit="event.preventDefault(); fazerCadastro();">
+            <div class="mb-3">
+                <label class="form-label">Nome Completo</label>
+                <input type="text" class="form-control bg-dark text-white border-secondary" id="regName" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">E-mail</label>
+                <input type="email" class="form-control bg-dark text-white border-secondary" id="regEmail" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Senha (Mín 6 caracteres)</label>
+                <input type="password" class="form-control bg-dark text-white border-secondary" id="regPassword" required minlength="6">
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">Criar Conta</button>
+                <a href="index.html" class="btn btn-outline-secondary">Voltar</a>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

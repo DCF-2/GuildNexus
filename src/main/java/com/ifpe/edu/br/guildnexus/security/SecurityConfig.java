@@ -31,8 +31,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/h2-console/**").permitAll() // Libera o H2
                         .requestMatchers(HttpMethod.POST, "/h2-console/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/*.html", "/js/**", "/css/**", "/images/**", "/favicon.ico").permitAll() // Libera recursos estáticos
                         .requestMatchers("/ws/**").permitAll() // Libera o WebSocket
                         .anyRequest().authenticated()
+                        
                 )
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // Necessário para o H2 funcionar
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
