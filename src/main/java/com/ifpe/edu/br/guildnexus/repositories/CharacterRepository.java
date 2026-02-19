@@ -9,4 +9,7 @@ import java.util.List;
 public interface CharacterRepository extends JpaRepository<Character, Long> {
     // Buscar todos os personagens de um Gamer específico
     List<Character> findByGamerId(Long gamerId);
+
+    // Procura personagens que pertencem a um jogo específico
+    List<Character> findByGameId(Long gameId);
 }
