@@ -1,3 +1,4 @@
+
 const API_URL = "http://localhost:8080";
 const token = localStorage.getItem("token");
 const myCharId = localStorage.getItem("selectedCharId");
@@ -9,14 +10,11 @@ if (!token || !myCharId) {
 
 document.addEventListener("DOMContentLoaded", () => {
     carregarMeuPerfil();
-    carregarFeed();
-    carregarDescobrir();
+    carregarFeed(); // Agora carrega só quem eu sigo
 });
 
-// 1. Carrega os dados do meu personagem para a coluna da esquerda
+// 1. Carrega os dados do meu personagem
 async function carregarMeuPerfil() {
-    // Como a nossa API ainda não tem um endpoint para um único personagem (GET /characters/{id}),
-    // vamos buscar todos os meus e filtrar pelo ID selecionado.
     const response = await fetch(`${API_URL}/characters/my`, {
         headers: { "Authorization": `Bearer ${token}` }
     });
@@ -28,7 +26,7 @@ async function carregarMeuPerfil() {
         if(me) {
             const avatar = me.photoUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${me.name}`;
             document.getElementById("myProfileCard").innerHTML = `
-                <img src="${avatar}" class="profile-img mx-auto mb-2" alt="Avatar">
+                <img src="${avatar}" class="profile-img mx-auto mb-2" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%;">
                 <h5 class="fw-bold mb-0">${me.name}</h5>
                 <p class="text-muted small mb-1">Lvl ${me.level} • ${me.characterClass}</p>
                 <span class="badge bg-secondary mb-2">${me.game.name}</span>
@@ -37,9 +35,10 @@ async function carregarMeuPerfil() {
     }
 }
 
-// 2. Carrega as publicações globais
+// 2. Carrega o FEED PERSONALIZADO (Só de quem eu sigo)
 async function carregarFeed() {
-    const response = await fetch(`${API_URL}/posts`, {
+    // Nova Rota: Busca apenas posts do feed deste personagem
+    const response = await fetch(`${API_URL}/posts/feed/${myCharId}`, {
         headers: { "Authorization": `Bearer ${token}` }
     });
 
@@ -50,29 +49,37 @@ async function carregarFeed() {
         const posts = await response.json();
         
         if (posts.length === 0) {
-            feedList.innerHTML = `<p class="text-center text-muted">Ainda não há publicações. Sê o primeiro!</p>`;
+            feedList.innerHTML = `<p class="text-center text-muted mt-5">Seu feed está vazio. Pesquise e siga outros personagens para ver as postagens deles aqui!</p>`;
             return;
         }
 
         posts.forEach(post => {
-            // Previne erro se o autor for apagado
             if(!post.author) return; 
             
             const avatar = post.author.photoUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${post.author.name}`;
             
             feedList.innerHTML += `
-                <div class="card post-card p-3">
+                <div class="card post-card p-3 mb-3 shadow-sm border-0">
                     <div class="d-flex align-items-center mb-2">
-                        <img src="${avatar}" class="post-avatar me-2" alt="Avatar">
+                        <img src="${avatar}" class="post-avatar me-2" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
                         <div>
-                            <h6 class="mb-0 fw-bold">${post.author.name}</h6>
-                            <small class="text-muted">${new Date(post.createdAt).toLocaleString('pt-PT')}</small>
+                            <h6 class="mb-0 fw-bold text-primary" style="cursor:pointer;" onclick="verPerfil(${post.author.id})">${post.author.name}</h6>
+                            <small class="text-muted">${new Date(post.createdAt).toLocaleDateString('pt-BR')} às ${new Date(post.createdAt).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</small>
                         </div>
                     </div>
                     <p class="mb-2">${post.content}</p>
-                    <div class="text-muted small">
-                        <span style="cursor:pointer;" onclick="gostarPost(${post.id})">👍 Gostar</span> • 
-                        <span style="cursor:pointer;" onclick="comentarPost(${post.id})">💬 Comentar</span>
+                    
+                    <div class="text-muted small mt-2 pt-2 border-top">
+                        <span style="cursor:pointer; color: #198754;" class="me-3 fw-bold" onclick="gostarPost(${post.id})">👍 Curtir / Descurtir</span> 
+                        <span style="cursor:pointer; color: #0dcaf0;" class="fw-bold" onclick="toggleComentarios(${post.id})">💬 Comentários</span>
+                    </div>
+
+                    <div id="caixa-comentarios-${post.id}" class="mt-3 p-2 bg-light rounded" style="display: none;">
+                        <div id="lista-comentarios-${post.id}" class="mb-2 small"></div>
+                        <div class="d-flex">
+                            <input type="text" id="input-comentario-${post.id}" class="form-control form-control-sm me-2" placeholder="Escreva um comentário...">
+                            <button class="btn btn-primary btn-sm" onclick="enviarComentario(${post.id})">Enviar</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -80,10 +87,9 @@ async function carregarFeed() {
     }
 }
 
-// 3. Criar uma nova publicação
+// 3. Criar uma nova postagem
 async function publicarPost() {
     const content = document.getElementById("postContent").value;
-    
     if(!content.trim()) return;
 
     const response = await fetch(`${API_URL}/posts`, {
@@ -96,8 +102,8 @@ async function publicarPost() {
     });
 
     if (response.ok) {
-        document.getElementById("postContent").value = ""; // Limpa a caixa
-        carregarFeed(); // Atualiza a lista
+        document.getElementById("postContent").value = ""; 
+        alert("Publicado com sucesso! (Lembre-se: Você só verá seus próprios posts se entrar no seu próprio perfil, o feed é para ver os outros).");
     } else {
         alert("Erro ao publicar.");
     }
@@ -108,6 +114,10 @@ async function carregarDescobrir() {
     // Para simplificar, poderíamos buscar utilizadores aqui, mas por agora 
     // podes testar publicando com 2 personagens diferentes para os ver no feed global.
     document.getElementById("discoverList").innerHTML = `<small class="text-muted">A procurar jogadores no servidor...</small>`;
+}
+
+function abrirLive() {
+    alert("Funcionalidade de Live em construção! (Próxima etapa)");
 }
 
 function logout() {

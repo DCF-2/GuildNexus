@@ -139,4 +139,9 @@ public class PostController {
         List<Post> feed = postRepository.findFeedByCharacterId(myCharacterId);
         return ResponseEntity.ok(feed);
     }
+
+    @GetMapping("/character/{characterId}")
+    public ResponseEntity<List<Post>> listByCharacter(@PathVariable Long characterId) {
+        return ResponseEntity.ok(postRepository.findByAuthorIdOrderByCreatedAtDesc(characterId));
+    }
 }
