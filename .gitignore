@@ -35,3 +35,12 @@ build/
 ### logs ###~
 logs/
 *.log
+
+### Outros arquivos a ignorar
+src/main/resources/application.properties
+application.properties
+
+# H2 Database
+*.mv.db
+*.trace.db
+/data/

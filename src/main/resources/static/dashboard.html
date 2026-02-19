@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Guild Nexus - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+        }
+
+        /* Fundo claro acinzentado */
+        .navbar {
+            background-color: #1a252f !important;
+        }
+
+        /* Azul escuro elegante */
+        .char-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            border-radius: 12px;
+        }
+
+        .char-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .char-img {
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .placeholder-img {
+            height: 200px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm px-4">
+        <a class="navbar-brand fw-bold" href="#">🛡️ Guild Nexus</a>
+        <div class="ms-auto d-flex align-items-center">
+            <span class="text-light me-3 fw-semibold" id="userDisplay">Gamer</span>
+            <button onclick="logout()" class="btn btn-danger btn-sm rounded-pill px-3">Sair</button>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-dark">Meus Heróis</h2>
+            <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal"
+                data-bs-target="#newCharModal">
+                + Novo Personagem
+            </button>
+        </div>
+
+        <div class="row g-4" id="charList">
+            <div class="col-12 text-center text-muted fs-5">Carregando...</div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="newCharModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">Criar Personagem</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="charName" class="form-control mb-3" placeholder="Nome do Personagem">
+                    <input type="number" id="charLevel" class="form-control mb-3" placeholder="Nível (ex: 1)" value="1">
+                    <input type="text" id="charClass" class="form-control mb-3"
+                        placeholder="Classe (ex: Mago, Guerreiro)">
+
+                    <label class="form-label text-muted small">Foto do Personagem (Opcional)</label>
+                    <input type="file" id="charPhotoFile" class="form-control mb-3" accept="image/png, image/jpeg">
+
+                    <label class="form-label text-muted small">Qual jogo ele pertence?</label>
+                    <input class="form-control mb-3" list="gamesDatalist" id="charGameName"
+                        placeholder="Digite ou escolha da lista">
+                    <datalist id="gamesDatalist">
+                        <option value="World of Warcraft">
+                        <option value="League of Legends">
+                        <option value="Valorant">
+                        <option value="Minecraft">
+                        <option value="Tibia">
+                        <option value="Counter-Strike 2">
+                        <option value="Genshin Impact">
+                        <option value="Elden Ring">
+                    </datalist>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary w-100" onclick="criarPersonagem()">Forjar
+                        Herói</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/home.js"></script>
+</body>
+
+</html>
