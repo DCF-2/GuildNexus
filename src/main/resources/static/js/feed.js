@@ -110,10 +110,6 @@ async function carregarDescobrir() {
     document.getElementById("discoverList").innerHTML = `<small class="text-muted">A procurar jogadores no servidor...</small>`;
 }
 
-function abrirLive() {
-    alert("Funcionalidade de Live em construção! (Próxima etapa)");
-}
-
 function logout() {
     localStorage.clear();
     window.location.href = "index.html";
