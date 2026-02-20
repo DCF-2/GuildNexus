@@ -1,4 +1,3 @@
-
 const API_URL = "http://localhost:8080";
 const token = localStorage.getItem("token");
 const myCharId = localStorage.getItem("selectedCharId");
@@ -10,7 +9,7 @@ if (!token || !myCharId) {
 
 document.addEventListener("DOMContentLoaded", () => {
     carregarMeuPerfil();
-    carregarFeed(); // Agora carrega só quem eu sigo
+    carregarFeed(); // Carrega o feed personalizado (só de quem sigo)
 });
 
 // 1. Carrega os dados do meu personagem
@@ -26,18 +25,20 @@ async function carregarMeuPerfil() {
         if(me) {
             const avatar = me.photoUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${me.name}`;
             document.getElementById("myProfileCard").innerHTML = `
-                <img src="${avatar}" class="profile-img mx-auto mb-2" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%;">
+                <img src="${avatar}" class="profile-img mx-auto mb-2" alt="Avatar" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%;">
                 <h5 class="fw-bold mb-0">${me.name}</h5>
                 <p class="text-muted small mb-1">Lvl ${me.level} • ${me.characterClass}</p>
                 <span class="badge bg-secondary mb-2">${me.game.name}</span>
             `;
+
+            // Chama a barra de descoberta de personagens que jogam o mesmo jogo!
+            carregarDescobrir(me.game.id);
         }
     }
 }
 
 // 2. Carrega o FEED PERSONALIZADO (Só de quem eu sigo)
 async function carregarFeed() {
-    // Nova Rota: Busca apenas posts do feed deste personagem
     const response = await fetch(`${API_URL}/posts/feed/${myCharId}`, {
         headers: { "Authorization": `Bearer ${token}` }
     });
@@ -61,7 +62,7 @@ async function carregarFeed() {
             feedList.innerHTML += `
                 <div class="card post-card p-3 mb-3 shadow-sm border-0">
                     <div class="d-flex align-items-center mb-2">
-                        <img src="${avatar}" class="post-avatar me-2" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
+                        <img src="${avatar}" class="post-avatar me-2" alt="Avatar" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;">
                         <div>
                             <h6 class="mb-0 fw-bold text-primary" style="cursor:pointer;" onclick="verPerfil(${post.author.id})">${post.author.name}</h6>
                             <small class="text-muted">${new Date(post.createdAt).toLocaleDateString('pt-BR')} às ${new Date(post.createdAt).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</small>
@@ -109,17 +110,125 @@ async function publicarPost() {
     }
 }
 
-// (Opcional - Simples listagem de users para a lateral)
-async function carregarDescobrir() {
-    // Para simplificar, poderíamos buscar utilizadores aqui, mas por agora 
-    // podes testar publicando com 2 personagens diferentes para os ver no feed global.
-    document.getElementById("discoverList").innerHTML = `<small class="text-muted">A procurar jogadores no servidor...</small>`;
+// 4. Lógica de Curtir (Toggle Like)
+async function gostarPost(postId) {
+    const response = await fetch(`${API_URL}/posts/${postId}/like`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ characterId: myCharId })
+    });
+
+    if (response.ok) {
+        const msg = await response.text();
+        alert(msg); // Exibe "Like adicionado" ou "Like removido"
+    }
 }
 
-function abrirLive() {
-    alert("Funcionalidade de Live em construção! (Próxima etapa)");
+// 5. Exibir/Ocultar caixa de comentários
+function toggleComentarios(postId) {
+    const caixa = document.getElementById(`caixa-comentarios-${postId}`);
+    if (caixa.style.display === "none") {
+        caixa.style.display = "block";
+        carregarComentarios(postId);
+    } else {
+        caixa.style.display = "none";
+    }
 }
 
+// 6. Buscar comentários no Backend
+async function carregarComentarios(postId) {
+    const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    const lista = document.getElementById(`lista-comentarios-${postId}`);
+    lista.innerHTML = "";
+
+    if (response.ok) {
+        const comentarios = await response.json();
+        if (comentarios.length === 0) {
+            lista.innerHTML = `<span class="text-muted">Nenhum comentário ainda.</span>`;
+            return;
+        }
+
+        comentarios.forEach(c => {
+            lista.innerHTML += `
+                <div class="mb-1 border-bottom pb-1">
+                    <strong class="text-dark">${c.author.name}:</strong> 
+                    <span class="text-secondary">${c.content}</span>
+                </div>
+            `;
+        });
+    }
+}
+
+// 7. Enviar um comentário novo
+async function enviarComentario(postId) {
+    const input = document.getElementById(`input-comentario-${postId}`);
+    const content = input.value.trim();
+    if(!content) return;
+
+    const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ characterId: myCharId, content: content })
+    });
+
+    if (response.ok) {
+        input.value = "";
+        carregarComentarios(postId); // Atualiza a listinha na hora
+    }
+}
+
+// 8. Pesquisar personagens do mesmo jogo na lateral do Feed
+async function carregarDescobrir(gameId) {
+    const response = await fetch(`${API_URL}/characters/game/${gameId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    const discoverList = document.getElementById("discoverList");
+    discoverList.innerHTML = "";
+
+    if (response.ok) {
+        const personagens = await response.json();
+        
+        // Filtra para não aparecer você mesmo na lista
+        const outros = personagens.filter(c => c.id != myCharId);
+
+        if (outros.length === 0) {
+            discoverList.innerHTML = `<p class="text-muted small">Nenhum outro jogador encontrado neste jogo.</p>`;
+            return;
+        }
+
+        outros.forEach(c => {
+            const avatar = c.photoUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${c.name}`;
+            discoverList.innerHTML += `
+                <div class="d-flex align-items-center mb-3 p-2 bg-light rounded border border-light shadow-sm">
+                    <img src="${avatar}" style="width: 35px; height: 35px; object-fit: cover; border-radius: 50%;" class="me-2">
+                    <div class="flex-grow-1">
+                        <strong class="d-block text-dark" style="font-size: 0.9rem;">${c.name}</strong>
+                        <span class="text-muted" style="font-size: 0.75rem;">Lvl ${c.level} • ${c.characterClass}</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="verPerfil(${c.id})">Ver</button>
+                </div>
+            `;
+        });
+    }
+}
+
+// 9. Redireciona para ver o perfil de outro jogador
+function verPerfil(targetCharacterId) {
+    localStorage.setItem("targetProfileId", targetCharacterId);
+    window.location.href = "profile.html";
+}
+
+// 10. Função de Deslogar
 function logout() {
     localStorage.clear();
     window.location.href = "index.html";
